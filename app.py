@@ -42,5 +42,6 @@ def delete_despesa(id):
   return jsonify({"erro": "Despesa não encontrada"}), 404
 
 
-# if __name__ == '__main__':
-#   app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 5000))  # Render passa a porta em $PORT
+    app.run(host="0.0.0.0", port=port)
