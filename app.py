@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from despesas import adicionar_despesa, listar_despesas, atualizar_despesa, remover_despesa
+import os
 
 
 app = Flask(__name__)
@@ -45,3 +46,4 @@ def delete_despesa(id):
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))  # Render passa a porta em $PORT
     app.run(host="0.0.0.0", port=port)
+
