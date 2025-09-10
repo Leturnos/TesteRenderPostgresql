@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle de Despesas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .form-section {
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      padding: 5px;
+      margin: 5px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+    button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Gerenciador de Despesas</h1>
+
+  <!-- Formulário para adicionar -->
+  <div class="form-section">
+    <input type="text" id="descricao" placeholder="Descrição">
+    <input type="number" id="valor" placeholder="Valor">
+    <select id="categoria">
+      <option value="alimentação">Alimentação</option>
+      <option value="transporte">Transporte</option>
+      <option value="lazer">Lazer</option>
+    </select>
+    <button onclick="adicionarDespesa()">Adicionar</button>
+  </div>
+
+  <!-- Tabela de despesas -->
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Descrição</th>
+        <th>Valor</th>
+        <th>Categoria</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabela-despesas"></tbody>
+  </table>
+
+  <script>
+    const API_URL = "http://127.0.0.1:5000/despesas";
+
+    async function carregarDespesas() {
+      const res = await fetch(API_URL);
+      const despesas = await res.json();
+      const tabela = document.getElementById("tabela-despesas");
+      tabela.innerHTML = "";
+      despesas.forEach(d => {
+        tabela.innerHTML += `
+          <tr>
+            <td>${d.id}</td>
+            <td>${d.descricao}</td>
+            <td>R$ ${d.valor}</td>
+            <td>${d.categoria}</td>
+            <td>
+              <button onclick="removerDespesa(${d.id})">Excluir</button>
+              <button onclick="editarDespesa(${d.id})">Editar</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    async function adicionarDespesa() {
+      const descricao = document.getElementById("descricao").value;
+      const valor = parseFloat(document.getElementById("valor").value);
+      const categoria = document.getElementById("categoria").value;
+
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ descricao, valor, categoria })
+      });
+
+      if (res.ok) {
+        carregarDespesas();
+        document.getElementById("descricao").value = "";
+        document.getElementById("valor").value = "";
+      } else {
+        alert("Erro ao adicionar despesa");
+      }
+    }
+
+    async function removerDespesa(id) {
+      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      carregarDespesas();
+    }
+
+    async function editarDespesa(id) {
+      const novaDescricao = prompt("Nova descrição:");
+      const novoValor = prompt("Novo valor:");
+      const novaCategoria = prompt("Nova categoria:");
+
+      if (novaDescricao && novoValor && novaCategoria) {
+        await fetch(`${API_URL}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            descricao: novaDescricao,
+            valor: parseFloat(novoValor),
+            categoria: novaCategoria
+          })
+        });
+        carregarDespesas();
+      }
+    }
+
+    // Carregar despesas ao iniciar
+    carregarDespesas();
+  </script>
+</body>
+</html>
